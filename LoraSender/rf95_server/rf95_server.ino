@@ -27,8 +27,8 @@ void setup()
 void loop()
 {
   //uint8_t d[] = "test lora";
-  //sendPacket();
-  requestReceive();
+  sendPacket();
+  //requestReceive();
   
 }
 
@@ -53,7 +53,7 @@ void requestReceive(){
       Serial.print("RSSI: ");
       Serial.println(rf95.lastRssi(), DEC);
     }
-    sendPacket();
+    //sendPacket();
   }
 }
 

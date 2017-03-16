@@ -27,17 +27,17 @@ void setup()
 
 void loop()
 {
-  //requestReceive();
+  requestReceive();
   //delay(2000);
   //uint8_t d[] = "merci lora";
-  sendPacket();
+  //sendPacket();
 }
 
 void sendPacket(){
   uint8_t value[] = "mercie lora";
   rf95.send(value, sizeof(value));
   rf95.sleep();
-  requestReceive();
+  //requestReceive();
 }
 
 void requestReceive(){
