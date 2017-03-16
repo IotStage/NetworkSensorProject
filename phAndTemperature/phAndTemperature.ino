@@ -8,7 +8,7 @@
 #include <OneWire.h>
 
 #define SensorPin A0  //le pin ou est branche le capteur
-#define Offset 2.50  //compensation de la deviation
+#define Offset 0.00  //compensation de la deviation
 #define LED 13      //le pin du led sur la carte
 #define intervalMesure 20 //intervalle de ou on lit les valeurs sur le pin SensorPin
 #define intervalConvertion 800 //intervalle ou les valeurs prises seront convertis en ph
@@ -17,7 +17,7 @@ int tableauPh[tailleEchantillon];  //tableau stokage des echantillons
 int indexPh=0; 
 
 /* Broche du bus 1-Wire */
-const byte BROCHE_ONEWIRE = 7;
+const byte BROCHE_ONEWIRE = 2;
 
 /* Code de retour de la fonction getTemperature() */
 enum DS18B20_RCODES {
