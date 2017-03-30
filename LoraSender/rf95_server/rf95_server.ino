@@ -7,40 +7,65 @@
 // It is designed to work with the other example rf95_client
 // Tested with Anarduino MiniWirelessLoRa
 
-
+#include <SoftwareSerial.h>
+SoftwareSerial mySerial(8, 5); // RX, TX
 #include <SPI.h>
 #include <RH_RF95.h>
 
 // Singleton instance of the radio driver
 RH_RF95 rf95;
 //int led = 8;
-
+String command = ""; // Stores response of the HC-06 Bluetooth device
 void setup() 
 {
     //pinMode(led, OUTPUT);     
   Serial.begin(9600);
   if (!rf95.init())
     Serial.println("init failed");  
+    mySerial.begin(9600);
+  mySerial.write("AT+NAMEnode1");
   // Defaults after init are 434.0MHz, 13dBm, Bw = 125 kHz, Cr = 4/5, Sf = 128chips/symbol, CRC on
 }
 
 void loop()
 {
   //uint8_t d[] = "test lora";
-  sendPacket();
+  if (mySerial.available()) {
+    while(mySerial.available()) { // While there is more to be read, keep reading.
+      command += String((char)mySerial.read());
+    }
+    
+    Serial.println(command);
+    command = ""; // No repeats
+  }
+  // Read user input if available.
+  if (Serial.available()){
+    delay(10); // The delay is necessary to get this working!
+    mySerial.write(Serial.read());
+  }
   //requestReceive();
+  
+  //sendPacket();
+  delay(4000);
   
 }
 
 void sendPacket(){
-  uint8_t value[] = "test lora";
-  rf95.send(value, sizeof(value));
-  Serial.println("packet send");
-  delay(1000);
+  /*if(Serial.available() > 0 ){
+    String t = Serial.readString();
+    uint8_t value[t.length()];
+    t.toCharArray(value, t.length());
+    rf95.send(value, sizeof(value));
+    rf95.waitPacketSent();
+    Serial.println("packet sent");
+  }*/
+   //= "test lora";
+  
+  //delay(400);
 }
 
 void requestReceive(){
-  while(rf95.available())
+  if(rf95.available())
   {
     Serial.println("receive packet");
     // Should be a message for us now   
@@ -53,7 +78,15 @@ void requestReceive(){
       Serial.print("RSSI: ");
       Serial.println(rf95.lastRssi(), DEC);
     }
+
+    
+    uint8_t value[]= "merci boy";
+    //t.toCharArray(value, t.length());
+    rf95.send(value, sizeof(value));
+    rf95.waitPacketSent();
+    Serial.println("packet sent");
     //sendPacket();
-  }
+  }else
+    Serial.println("aucun packet recu");
 }
 
