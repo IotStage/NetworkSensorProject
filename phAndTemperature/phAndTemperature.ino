@@ -7,7 +7,7 @@
 */
 #include <OneWire.h>
 
-#define SensorPin A0  //le pin ou est branche le capteur
+#define SensorPin A0  //le pin ou est branche le capteur PH
 #define Offset 0.00  //compensation de la deviation
 #define LED 13      //le pin du led sur la carte
 #define intervalMesure 20 //intervalle de ou on lit les valeurs sur le pin SensorPin
