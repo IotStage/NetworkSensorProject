@@ -12,7 +12,7 @@
 double orpValue;
 
 #define ArrayLenth  100    //times of collection
-#define orpPin 1          //orp meter output,connect to Arduino controller ADC pin
+#define orpPin A3          //orp meter output,connect to Arduino controller ADC pin
 
 int orpArray[ArrayLenth];
 int orpArrayIndex=0;
@@ -80,9 +80,9 @@ void loop(void) {
   if(millis() >= printTime)   //Every 800 milliseconds, print a numerical, convert the state of the LED indicator
   {
   printTime=millis()+800;
-  Serial.print("ORP: ");
-  Serial.print((int)orpValue);
-        Serial.println("mV");
+  //Serial.print("ORP: ");
+  Serial.println((int)orpValue);
+  //      Serial.println("mV");
         digitalWrite(LED,1-digitalRead(LED));
   }
 }
