@@ -4,9 +4,9 @@
  * product : Current Sensor ACS711 20A
  */
 
-const int pinOut = A1;
+const int pinOut = A0;
 const int sensibilite = 100; //mmv/A
-const int offset = 2500; 
+int offset = 2500.0; 
 
 
 void setup() {
@@ -25,10 +25,8 @@ Serial.println(getCurrentValue());
 
 float getCurrentValue(){
 
-    int lu = analogRead(pinOut);
-    
+    float lu = analogRead(pinOut);
     float voltage = lu*(5000.0/1023.0); // + 15;
-    
     float y = offset-voltage; //en mV
     
     float value = y/sensibilite;
