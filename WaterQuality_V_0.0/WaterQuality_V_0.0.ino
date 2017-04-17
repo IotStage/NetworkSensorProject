@@ -127,10 +127,10 @@ byte getTemperature(float *temperature, byte reset_search) {
   
    if(millis() - printTime > intervalConvertion)  //Every 800 milliseconds, print a numerical, convert the state of the LED indicator
    {
-   Serial.print("Voltage:");
-   Serial.print(voltage,2);
-   Serial.print("  pH value: ");
-   Serial.println(pHValue,2);
+   //Serial.print("VoltagePH:");
+   //Serial.print(voltage,2);
+   Serial.print(" pH: ");
+   Serial.print(pHValue,2);
    digitalWrite(LED,digitalRead(LED)^1);
    printTime=millis();
    }
@@ -256,7 +256,7 @@ int getORP(){
   if(millis() >= orpTimer)
   {
     orpTimer=millis()+20;
-    orpArray[orpArrayIndex++]=analogRead(orpPin);    //read an analog value every 20ms
+    orpArray[orpArrayIndex++]=analogRead(SensorPinORP);    //read an analog value every 20ms
     if (orpArrayIndex==ArrayLenth) {
       orpArrayIndex=0;
     }   
@@ -369,19 +369,19 @@ float getEC(){
   {
     printTime=millis();
     averageVoltage=AnalogAverage*(float)5000/1024;
-    Serial.print("Analog value:");
-    Serial.print(AnalogAverage);   //analog average,from 0 to 1023
-    Serial.print("    Voltage:");
-    Serial.print(averageVoltage);  //millivolt average,from 0mv to 4995mV
-    Serial.print("mV    ");
-    Serial.print("temp:");
+    //Serial.print("Analog value:");
+    //Serial.print(AnalogAverage);   //analog average,from 0 to 1023
+    //Serial.print("    Voltage:");
+    //Serial.print(averageVoltage);  //millivolt average,from 0mv to 4995mV
+    //Serial.print("mV    ");
+    Serial.print(" temperature:");
     Serial.print(temperature);    //current temperature
-    Serial.print("^C     EC:");
+    Serial.print(" C     EC:");
     
     float TempCoefficient=1.0+0.0185*(temperature-25.0);    //temperature compensation formula: fFinalResult(25^C) = fFinalResult(current)/(1.0+0.0185*(fTP-25.0));
     float CoefficientVolatge=(float)averageVoltage/TempCoefficient;   
-    if(CoefficientVolatge<150)Serial.println("No solution!");   //25^C 1413us/cm<-->about 216mv  if the voltage(compensate)<150,that is <1ms/cm,out of the range
-    else if(CoefficientVolatge>3300)Serial.println("Out of the range!");  //>20ms/cm,out of the range
+    if(CoefficientVolatge<150)Serial.println("No solution! ");   //25^C 1413us/cm<-->about 216mv  if the voltage(compensate)<150,that is <1ms/cm,out of the range
+    else if(CoefficientVolatge>3300)Serial.println("Out of the range! ");  //>20ms/cm,out of the range
     else
     { 
       if(CoefficientVolatge<=448)ECcurrent=6.84*CoefficientVolatge-64.32;   //1ms/cm<EC<=3ms/cm
@@ -390,7 +390,7 @@ float getEC(){
       ECcurrent/=1000;    //convert us/cm to ms/cm
       ec = ECcurrent;
       Serial.print(ECcurrent,2);  //two decimal
-      Serial.println("ms/cm");
+      Serial.println(" ms/cm ");
     }
   }
   return ec;
@@ -409,7 +409,9 @@ void loop() {
   Serial.print(getORP());
   Serial.print("mV Turbidite = ");
   Serial.print(getTurbidity());
-  Serial.println("V");
+  Serial.print("V ");
+  getPh();
+  getEC();
   delay(1000);
    /*float temperature;
   /* Lit la température ambiante à ~1Hz 
