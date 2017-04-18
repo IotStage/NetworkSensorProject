@@ -77,8 +77,8 @@ void loop(void)
   
   Console.print(("Receive packet timeout, state "));
   Console.println(e, DEC);
-  //for(unsigned int i=0; i<sx1276._payloadlength; i++)
-  //  Console.print((char)sx1276.packet_received.data[i]);
+  //for(unsigned int i=0; <sx1276._payloadlength; i++)
+  //  Console.print((char)sx1276.packet_received.data[i]);i
   Console.print("le paquet recu est : ");
   Console.println(paquet);
 }
