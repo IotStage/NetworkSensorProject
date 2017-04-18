@@ -1,5 +1,5 @@
 #include <Wire.h>
-int x = 0;
+char x = '0';
 long debutTransmission;
 long finTransmission;
 void setup() {
@@ -7,14 +7,14 @@ void setup() {
   Serial.begin(9600);
   // put your setup code here, to run once:
 debutTransmission = millis();
-finTransmission = 10000;
+finTransmission = 1000;
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
 if(Serial.available())
-   sendToSlave(Serial.readString());
-else
+   //sendToSlave(Serial.readString());
+//else
   sendToXSlave();
 getSlaveMessage();
 delay(1000);
@@ -47,13 +47,34 @@ void sendToSlave(String msg){
 }
 
 void sendToXSlave(){
-  Serial.println(x);
+  String value = Serial.readString();
+  String mode = value.substring(0,4);//.toUpperCase();
+  String v = value.substring(5,6);
+  if(mode == "MODE" )
+   {
+    int c = v.toInt();
+    if(c < 5)
+    {
+      Serial.print("set mode to ");
+      Serial.println(c);
+      switch(c){
+        case 0:sendElement('0');break;
+        case 1:sendElement('1');break;
+        case 2:sendElement('2');break;
+        case 3:sendElement('3');break;
+        case 4:sendElement('4');break;
+      }
+      
+    }else Serial.println("erreur lors du transfert du mode ");
+   }else Serial.println("erreur du mode entre");
+    
+  
+  //else x++;
+}
+
+void sendElement(char e){
   Wire.beginTransmission(8); // transmit to device #8
-  //Wire.write("x is ");        // sends five bytes
-  Wire.write("0");              // sends one byte
-  Wire.endTransmission();    // stop transmitting
-  //x= x == 5 ? x++ : 0;
-  if(x == 4) x = 0;
-  else x++;
+  Wire.write(e);              // sends one byte
+  Wire.endTransmission();
 }
 
