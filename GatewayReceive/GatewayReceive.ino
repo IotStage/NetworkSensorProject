@@ -45,7 +45,7 @@ void setup()
   sx1276.ON();
   
   // Set transmission mode and print the result
-  e = sx1276.setMode(1);
+  e = sx1276.setMode(4);
   Console.println(e, DEC);
   
   // Select frequency channel
@@ -59,7 +59,7 @@ void setup()
   Console.println(e);
   
   // Set the node address and print the result
-  e = sx1276.setNodeAddress(8);
+  e = sx1276.setNodeAddress(9);
   Console.println(e, DEC);
   
   // Print a success message
@@ -77,8 +77,8 @@ void loop(void)
   
   Console.print(("Receive packet timeout, state "));
   Console.println(e, DEC);
-  //for(unsigned int i=0; <sx1276._payloadlength; i++)
-  //  Console.print((char)sx1276.packet_received.data[i]);i
+  //for(unsigned int i=0; i<sx1276._payloadlength; i++)
+  //  Console.print((char)sx1276.packet_received.data[i]);
   Console.print("le paquet recu est : ");
   Console.println(paquet);
 }
