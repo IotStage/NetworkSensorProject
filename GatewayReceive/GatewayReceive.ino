@@ -69,17 +69,51 @@ void setup()
 void loop(void)
 {
   // Receive message
+  String paquet = "paquet";
+  sendPaquet(paquet, 3);
+  checkPacket();
+}
+
+void sendPaquet(String paquet, int idClient){
+  char buff[paquet.length()];
+   paquet.toCharArray(buff, paquet.length()); 
+  // Send message1 and print the result
+  e = sx1276.sendPacketTimeout(idClient, buff);
+  Serial.print("Packet sent, state ");
+  Serial.println(e, DEC);
+  Serial.println(buff);
   
+}
+
+void checkPacket(){
   e = sx1276.receivePacketTimeout(10000);
   e = sx1276.getRSSIpacket();
- paquet = sx1276.getPacketRecu();
-  
-  
+  paquet = sx1276.getPacketRecu();
   Console.print(("Receive packet timeout, state "));
   Console.println(e, DEC);
-  //for(unsigned int i=0; i<sx1276._payloadlength; i++)
-  //  Console.print((char)sx1276.packet_received.data[i]);
   Console.print("le paquet recu est : ");
   Console.println(paquet);
+  if(sx1276._payloadlength > 0){
+    String value = paquet.substring(5, paquet.length());
+    //Console.println(value);  
+    saveData(value);
+  }
+}
+
+void saveData(String sensor){
+  Process logdata;
+  // date is a command line utility to get the date and the time
+  // in different formats depending on the additional parameter
+  logdata.begin("python");
+  logdata.addParameter("/root/datalogger.py");  //
+  logdata.addParameter("vitesse");
+  logdata.addParameter(sensor);//
+  logdata.run();  // run the command
+ 
+  // read the output of the command
+  while (logdata.available() > 0) {
+    char c = logdata.read();
+  }
+  Console.println("send data done.");
 }
 
