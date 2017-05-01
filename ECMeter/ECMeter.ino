@@ -22,7 +22,7 @@
 const byte numReadings = 20;     //the number of sample times
 byte ECsensorPin = A1;  //EC Meter analog output,pin on analog 1
 byte DS18B20_Pin = 2; //DS18B20 signal, pin on digital 2
-unsigned int AnalogSampleInterval=25,printInterval=700,tempSampleInterval=850;  //analog sample interval;serial print interval;temperature sample interval
+unsigned int __analogSampleInterval  =25,printInterval=700,_tempSampleInterval=850;  //analog sample interval;serial print interval;temperature sample interval
 unsigned int readings[numReadings];      // the readings from the analog input
 byte index = 0;                  // the index of the current reading
 unsigned long AnalogValueTotal = 0;                  // the running total
@@ -49,7 +49,7 @@ void loop() {
   /*
    Every once in a while,sample the analog value and calculate the average.
   */
-  if(millis()-AnalogSampleTime>=AnalogSampleInterval)  
+  if(millis()-AnalogSampleTime>=_analogSampleInterval )  
   {
     AnalogSampleTime=millis();
      // subtract the last reading:
@@ -71,7 +71,7 @@ void loop() {
    Every once in a while,MCU read the temperature from the DS18B20 and then let the DS18B20 start the convert.
    Attention:The interval between start the convert and read the temperature should be greater than 750 millisecond,or the temperature is not accurate!
   */
-   if(millis()-tempSampleTime>=tempSampleInterval) 
+   if(millis()-tempSampleTime>=_tempSampleInterval) 
   {
     tempSampleTime=millis();
     temperature = TempProcess(ReadTemperature);  // read the current temperature from the  DS18B20
