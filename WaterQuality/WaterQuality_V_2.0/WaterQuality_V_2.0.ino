@@ -40,7 +40,7 @@ EC ec(SensorPinEC, SensorPinTemperature);
 ORP orp(SensorPinORP);
 Anemometre anemometre(SensorPinAnemometre);
 Turbidity turbidity(SensorPinTurbidity);
-uint8_t DELAI = 100;
+uint8_t DELAI = 1000;
 int nbBasculement = 0;
 int avant = 1;
 int value = 0;
@@ -74,15 +74,16 @@ void setup(){
 void loop(){
   updateSensor();
   delay(DELAI);
+  Serial.println(getTrame());
 }
 
 void updateSensor(){
   ph.updatePh();
-  ec.updateEC();
+  //ec.updateEC();
   orp.updateORP();
-  anemometre.updateAnemometre();
+  /*anemometre.updateAnemometre();
   turbidity.updateTurbidity();
-  getBasculement();
+  getBasculement();*/
 }
 
 String getTrame(){
@@ -113,7 +114,7 @@ void sendDataToMaster(){
     case '4': Wire.write("mode 4 : send PH  ");break;
     default: Wire.write("-> temp,ORP,EC,PH ");
    }*/
-   String msg = getTrame();
+  String msg = getTrame();
    int len = msg.length()+1;
    byte buff[len];
    msg.toCharArray(buff, len);

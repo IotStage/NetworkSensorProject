@@ -21,14 +21,15 @@ delay(1000);
 }
 
 void getSlaveMessage(){
+  String msg="";
   long tmp = millis();
   if(tmp - debutTransmission > finTransmission){
     Wire.requestFrom(8, 18);    // request 6 bytes from slave device #8
     while (Wire.available()) { // slave may send less than requested
       char c = Wire.read(); // receive a byte as character
-      Serial.print(c);         // print the character
+      msg+=c;         // print the character
      }
-      Serial.println();
+      Serial.println(msg);
       debutTransmission = tmp;
   }
  

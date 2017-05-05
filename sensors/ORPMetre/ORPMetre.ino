@@ -6,13 +6,13 @@
  # SKU    : SEN0165
 */
 #define VOLTAGE 5.00    //system voltage
-#define OFFSET 7        //zero drift voltage
+#define OFFSET 16        //zero drift voltage
 #define LED 13         //operating instructions
 
 double orpValue;
 
 #define ArrayLenth  100    //times of collection
-#define orpPin A3          //orp meter output,connect to Arduino controller ADC pin
+#define orpPin A1          //orp meter output,connect to Arduino controller ADC pin
 
 int orpArray[ArrayLenth];
 int orpArrayIndex=0;
