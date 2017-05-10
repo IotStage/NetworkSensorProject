@@ -33,8 +33,10 @@ void setup()
 void loop(void)
 {
    if(millis() - temps > intervalle ){
-      Wire.requestFrom(ADDWIRESLAVE, 32);
+      Wire.requestFrom(ADDWIRESLAVE, 32, true);
       String data = getDataFromWrite();
+      Wire.requestFrom(ADDWIRESLAVE, 32);
+      data+=getDataFromWrite();
       if(data != "" ){
         sendDonnees(data);
       }
