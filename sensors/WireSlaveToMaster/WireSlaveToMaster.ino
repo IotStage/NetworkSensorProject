@@ -6,6 +6,7 @@ void setup() {
   Wire.begin(8);                // join i2c bus with address #8
   Wire.onRequest(envoiEvent); // register event
   Wire.onReceive(recuEvent);
+  Serial.println("waiting informations from master");
 }
 
 void loop() {
