@@ -42,8 +42,12 @@ void loop(void)
 
    if(availablePacket()){
       String info = sx1276.getPacketRecu();
-      if(){
-        
+      if(info != ""){
+        char buff[info.length()+1];
+        info.toCharArray(buff, info.length()+1);
+        String delai="";
+        for(int i=5; i<info.length()+1; i++) delai+=buff[i];
+        intervalle = delai.toInt();
       }
    }
   
@@ -66,7 +70,7 @@ void sendDonnees(String paquet){
   char buff[paquet.length()+1];
   paquet.toCharArray(buff, paquet.length()+1); 
   sx1276.sendPacketTimeout(ADDSERVER, buff);
-  Serial.print("Packet sent, state ");
+  //Serial.print("Packet sent, state ");
   //Serial.println(e, DEC);
   Serial.println(strlen(buff));
   delay(5000);
