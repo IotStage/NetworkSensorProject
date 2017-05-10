@@ -8,6 +8,7 @@ void setup() {
   // put your setup code here, to run once:
 debutTransmission = millis();
 finTransmission = 1000;
+Serial.println("transmission initialisée");
 }
 
 void loop() {
@@ -17,7 +18,7 @@ if(Serial.available())
 //else
   sendToXSlave();
 getSlaveMessage();
-delay(1000);
+delay(100);
 }
 
 void getSlaveMessage(){
