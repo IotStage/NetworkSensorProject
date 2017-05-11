@@ -158,23 +158,24 @@ void updateSensor(){
 
 String getTrame(){
   String trame="";
-  trame+="ph="+String(ph.getMesure(),2);
-  //trame+=";";
-  trame+=";or="+String(orp.getMesure(),2);
-  //trame+=";";
-  trame+=";ec="+String(ec.getMesure(),2);
-  //trame+=";";
-  trame+=";te="+String(ec.getTemperature(), 2);
-  //trame+=";";
-  trame+=";vi="+String(anemometre.getMesure(),2);
-  //trame+=";";
-  trame+=";tu="+String(turbidity.getMesure(),2);
-  //trame+=";";
-  //trame+=";pu="+nbBasculement;
+  trame+=String(ph.getMesure(),1);
+  trame+=";";
+  trame+=String(orp.getMesure(),1);
+  trame+=";";
+  trame+=String((float)ec.getMesure(),1);
+  trame+=";";
+  trame+=String((float)ec.getTemperature(), 1);
+  trame+=";";
+  trame+=String((float)anemometre.getMesure(),1);
+  trame+=";";
+  trame+=String(turbidity.getMesure(),1);
+  trame+=";";
+  trame+=String((float)nbBasculement, 1);
   Serial.println(nbBasculement);
   nbBasculement=0;
   Serial.print("taille paquet =");
   Serial.println(trame.length());
+  Serial.flush();
   return trame;
   
 }
