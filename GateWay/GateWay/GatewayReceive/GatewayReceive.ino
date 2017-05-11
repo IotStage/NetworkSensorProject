@@ -2,6 +2,8 @@
 #include <Console.h>
 #include <SPI.h>
 
+#define ADDRESSE_GATEWAY 9
+#define ADDRESSE_RELAI 7
 
 int e;
 String paquet="";
@@ -35,7 +37,7 @@ void setup()
   Console.println(e);
   
   // Set the node address and print the result
-  e = sx1276.setNodeAddress(8);
+  e = sx1276.setNodeAddress(ADDRESSE_GATEWAY);
   Console.println(e, DEC);
   
   // Print a success message
@@ -44,10 +46,12 @@ void setup()
 
 void loop(void)
 {
+  
   // Receive message
   //String paquet = "paquet";
   //sendPaquet(paquet, 3);
   checkPacket();
+  delay(10000);
 }
 
 void sendPaquet(String paquet, int idClient){
@@ -66,12 +70,13 @@ void checkPacket(){
   paquet = sx1276.getPacketRecu();
   Console.print(("Receive packet timeout, state "));
   Console.println(e, DEC);
-  Console.print("le paquet recu est : ");
-  Console.println(paquet);
+ Console.println(sx1276._payloadlength);
   if(sx1276._payloadlength > 0){
    // String value = paquet.substring(5, paquet.length());
     //Console.println(value);  
-   // saveData(paquet);
+     Console.print("le paquet recu est : ");
+  Console.println(paquet);
+    saveData(paquet);
   }
 }
 
@@ -81,7 +86,7 @@ void saveData(String sensor){
   logdata.addParameter("/root/datalogger.py");  //
   //logdata.addParameter("vitesse");
   logdata.addParameter(sensor);//
-  Console.println(sensor);
+  //Console.println(sensor);
   logdata.run();
  
   // read the output of the command
@@ -89,7 +94,7 @@ void saveData(String sensor){
     char c = logdata.read();
     Console.print(c);
   }*/
-//  logdata.stop();
+ // logdata.stop();
   Console.println("send data done.");
 }
 
