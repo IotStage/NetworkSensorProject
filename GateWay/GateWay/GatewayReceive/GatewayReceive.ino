@@ -21,7 +21,7 @@ void setup()
   sx1276.ON();
   
   // Set transmission mode and print the result
-  e = sx1276.setMode(4);
+  e = sx1276.setMode(1);
   Console.println(e, DEC);
   
   // Select frequency channel
@@ -35,7 +35,7 @@ void setup()
   Console.println(e);
   
   // Set the node address and print the result
-  e = sx1276.setNodeAddress(9);
+  e = sx1276.setNodeAddress(8);
   Console.println(e, DEC);
   
   // Print a success message
@@ -45,15 +45,14 @@ void setup()
 void loop(void)
 {
   // Receive message
-  String paquet = "paquet";
-  sendPaquet(paquet, 3);
+  //String paquet = "paquet";
+  //sendPaquet(paquet, 3);
   checkPacket();
 }
 
 void sendPaquet(String paquet, int idClient){
   char buff[paquet.length()];
    paquet.toCharArray(buff, paquet.length()); 
-  // Send message1 and print the result
   e = sx1276.sendPacketTimeout(idClient, buff);
   Console.print("Packet sent, state ");
   Console.println(e, DEC);
@@ -72,7 +71,7 @@ void checkPacket(){
   if(sx1276._payloadlength > 0){
    // String value = paquet.substring(5, paquet.length());
     //Console.println(value);  
-    saveData(paquet);
+   // saveData(paquet);
   }
 }
 
@@ -86,9 +85,10 @@ void saveData(String sensor){
   logdata.run();
  
   // read the output of the command
-  while (logdata.available() > 0) {
+ /* while (logdata.available() > 0) {
     char c = logdata.read();
-  }
+    Console.print(c);
+  }*/
 //  logdata.stop();
   Console.println("send data done.");
 }

@@ -101,15 +101,18 @@ void sendToMaster(){
   char buff[len];
   donnees.toCharArray(buff, len);
   
-  if(len > 32){
-    char buff2[32];
-    char buff3[len-32];
-    for(int i=0; i<32; i++)
+  if(len > 64){
+    char buff2[64];
+    char buff3[len-64];
+    for(int i=0; i<64; i++)
       buff2[i]=buff[i];
-    Wire.write(buff2, 32);
-    for(int i=0; i<len-32; i++)
-      buff3[i]=buff[32+i];
-    Wire.write(buff3, len-32);
+    Wire.write(buff2, 64);
+    for(int i=0; i<len-64; i++)
+      buff3[i]=buff[64+i];
+    Wire.write(buff3, len-64);
+  }
+  else  {
+    Wire.write(buff, len);
   }
 }
 

@@ -15,7 +15,6 @@ void initLora(){
   sx1276.setMode(1);
   sx1276.setChannel(CH_16_868);
   sx1276.setMaxCurrent(0x1B);
-  sx1276.getMaxCurrent();
   sx1276.setPower('M');
   sx1276.setNodeAddress(ADDNODE);
   Serial.print("SX1276 successfully configured ");
@@ -33,12 +32,13 @@ void setup()
 void loop(void)
 {
    if(millis() - temps > intervalle ){
-      Wire.requestFrom(ADDWIRESLAVE, 32, true);
+      Serial.println("requet to slave");
+      Wire.requestFrom(ADDWIRESLAVE, 64);
       String data = getDataFromWrite();
-      Wire.requestFrom(ADDWIRESLAVE, 32);
-      data+=getDataFromWrite();
+      //data+=getDataFromWrite();
       if(data != "" ){
-        sendDonnees(data);
+        //sendDonnees(data);
+        Serial.println(data);
       }
    }
 
@@ -60,7 +60,8 @@ String getDataFromWrite(){
   String data="";
   while (Wire.available()) { // slave may send less than requested
     char c = Wire.read(); // receive a byte as character
-    data+=String(c);   // print the character
+    if(c >=' ' && c<='z')
+      data+=String(c);   // print the character
   }
 
   return data;
@@ -85,7 +86,7 @@ boolean availablePacket(){
  
    sx1276.receivePacketTimeout(10000);
    String p = sx1276.getPacketRecu();
-   if(e == 0 && p.length()>0){ 
+   if(p.length()>0){ 
     return true;
      //sendDonnees(paquet);
      //Serial.println("paquet envoye avec succes");
