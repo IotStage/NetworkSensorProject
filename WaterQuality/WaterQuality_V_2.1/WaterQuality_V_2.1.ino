@@ -1,11 +1,11 @@
 
 /*
  # Cet code rassemble tous les capteurs
- # Ver   : 2.0
+ # Ver   : 2.1
  # Product: analog pH meter, turbidity, ORP, EC Meter, Temperature, anemometre, rain jauge
  # Author : Bassirou NGOM
  # email : bassiroungom26@gmail.com
- # Require: WSN Librairie
+ # Require: WSN Librairie and SX1276 librairie
  */
 /************
  * inclusions
@@ -16,8 +16,10 @@
  #include <WSNTemperatureSensor.h>
  #include <WSNAnemometreSensor.h>
  #include <WSNTurbiditySensor.h>
- #include <EEPROM.h>
- #include <cc1101.h> 
+ #include <SX1276.h>
+  #include <SPI.h>
+
+
 
 /************
  * Constantes
@@ -29,7 +31,11 @@
 #define SensorPinTemperature 5
 #define SensorPinAnemometre 3
 #define SensorPinPluviometre 7
-#define WIREADD 8
+
+
+#define ADDRESSE_NODE 3
+#define ADDRESSE_RELAI 7
+#define DEBUG 0
 
 
 /*************
@@ -44,10 +50,11 @@ int DELAI = 1000;
 int nbBasculement = 0;
 int avant = 1;
 int value = 0;
-CC1101 cc1101;
-byte syncWord[2] = {199, 0};
-boolean packetAvailable = false;
-CCPACKET paquet;
+int e=0;
+String paquet="";
+int DELAY = 2000; //2 secondes
+long temps=0;
+long ATTENTE = 2000;
 
 
 /*************
@@ -59,15 +66,14 @@ CCPACKET paquet;
  String getTrame();
  void getBasculement();
  void initRf();
- void cc1101signalsInterrupt(void);
- void envoiPaquet();
- void formatPaquet(String message);
- 
+ boolean availablePack();
+ void sendPaquet(String paquet, int idClient);
+
 /****************************
  * definition des fonctions *
  ****************************/
 void setup(){
-  Serial.begin(9600);
+  Serial.begin(115200);
   initRF();
   anemometre.init();
   ec.init();
@@ -76,62 +82,68 @@ void setup(){
 }
 
 void loop(){
-  String trame= getTrame();
   updateSensor();
-  //delay(DELAI);
-  formatPaquet(trame);
+  
+  sendPaquet(getTrame(), ADDRESSE_RELAI);
   Serial.println("paquet sent");
   delay(DELAI);
   
 }
 
 void initRF(){
-  cc1101.init();
-  cc1101.set_433_GFSK_500_K();        //changement du type de modulation et du debit (modulation GFSK, debit 1,2 kbauds avec frequence 433 Mhz)
-  cc1101.setChannel(10);
-  cc1101.disableAddressCheck(); //if not specified, will only display "packet received"
-  attachInterrupt(0, cc1101signalsInterrupt, FALLING);
-  Serial.println("Initialisarion antenne RF terminee...");
+  Serial.println("Debut initialisation RF");
+
+  sx1276.ON();
+  e = sx1276.setMode(1);
+  #if (DEBUG > 0)
+    Serial.print("configuration du mode de transmission ");
+    Serial.println(e, DEC);
+  #endif
+  e = sx1276.setChannel(CH_16_868);
+  #if (DEBUG > 0)
+    Serial.print("configuration du canal de transmission ");
+    Serial.println(e, DEC);
+  #endif
+  e = sx1276.setPower('M');
+  #if (DEBUG > 0)
+    Serial.print("configuration de la puissance ");
+    Serial.println(e);
+  #endif
+  
+  e = sx1276.setNodeAddress(ADDRESSE_NODE);
+  #if (DEBUG > 0)
+    Serial.print("configuration de l'adresse du relai ");
+    Serial.println(e, DEC);
+  #endif
+  Serial.print("Configuration terminee");
 }
 
-
-/* Handle interrupt from CC1101 (INT0) gdo0 on pin2 */
-void cc1101signalsInterrupt(void){
-  // set the flag that a package is available
-  packetAvailable = true;
+boolean availablePacket(){
+  e = sx1276.receivePacketTimeout(10000);
+  e = sx1276.getRSSIpacket();
+  paquet = sx1276.getPacketRecu();
+  #if (DEBUG > 0)
+    Serial.print(("Receive packet timeout, state "));
+    Serial.println(e, DEC);
+    Serial.print("le paquet recu est : ");
+    Serial.println(paquet);
+  #endif
+  if(sx1276._payloadlength > 0){
+   return true;
+  }
+  return false;
 }
 
-
-void envoiPaquet() {
-  if(cc1101.sendData(paquet)){
-    Serial.println("Envoi termine");
-   }else{
-    Serial.println("Echec de l'envoi");
-  }
-}
-
-/***
- * format segmentatoin des donnees a envoyer en paquet, 
- * ajout d'une entete specifique (~@]#) pour limiter les paquets
- */
-void formatPaquet(String message){
-  Serial.print("message :");
-  Serial.println(message);
-  if(message.length()<61){
-    Serial.print("Taille ");
-    Serial.println(message.length());
-    paquet.length=message.length();
-    message.getBytes(paquet.data, message.length()+1);
-    envoiPaquet();
-  }
-  else{
-    String partie1 = message.substring(0, 55);
-    String partie2 = message.substring(55);
-    partie1+="~@]#`";
-    formatPaquet(partie1);
-    //delay(500);
-    formatPaquet(partie2);
-  }
+void sendPaquet(String paquet, int idClient){
+  char buff[paquet.length()+1];
+  paquet.toCharArray(buff, paquet.length()+1); 
+  e = sx1276.sendPacketTimeout(idClient, buff);
+  #if (DEBUG > 0)
+    Serial.print("Packet sent, state ");
+    Serial.println(e, DEC);
+    Serial.println(buff);
+  #endif
+  
 }
 
 
@@ -146,27 +158,30 @@ void updateSensor(){
 
 String getTrame(){
   String trame="";
-  trame+="phv="+String(ph.getMesure(),2);
-  trame+=";";
-  trame+="orp="+String(orp.getMesure(),2);
-  trame+=";";
-  trame+="ecv="+String(ec.getMesure(),2);
-  trame+=";";
-  trame+="tem="+String(ec.getTemperature(), 2);
-  trame+=";";
-  trame+="vit="+String(anemometre.getMesure(),2);
-  trame+=";";
-  trame+="tur="+String(turbidity.getMesure(),2);
-  trame+=";";
-  trame+="plu="+String(nbBasculement);
+  trame+="ph="+String(ph.getMesure(),2);
+  //trame+=";";
+  trame+=";or="+String(orp.getMesure(),2);
+  //trame+=";";
+  trame+=";ec="+String(ec.getMesure(),2);
+  //trame+=";";
+  trame+=";te="+String(ec.getTemperature(), 2);
+  //trame+=";";
+  trame+=";vi="+String(anemometre.getMesure(),2);
+  //trame+=";";
+  trame+=";tu="+String(turbidity.getMesure(),2);
+  //trame+=";";
+  //trame+=";pu="+nbBasculement;
+  Serial.println(nbBasculement);
   nbBasculement=0;
+  Serial.print("taille paquet =");
+  Serial.println(trame.length());
   return trame;
   
 }
 
 void getBasculement(){
-  value = digitalRead(SensorPinPluviometre);
-  if (value == 0 && avant == 1) 
+  //value = digitalRead(SensorPinPluviometre);
+  //if (value == 0 && avant == 1) 
     nbBasculement++;
   avant = value;
 }

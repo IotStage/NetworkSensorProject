@@ -48,27 +48,33 @@ void initRF(){
   Serial.print("Configuration terminee");
 }
 
-void availablePacket(){
+boolean availablePacket(){
   e = sx1276.receivePacketTimeout(10000);
-  e = sx1276.getRSSIpacket();
+  //e = sx1276.getRSSIpacket();
   paquet = sx1276.getPacketRecu();
-  Serial.print(("Receive packet timeout, state "));
-  Serial.println(e, DEC);
-  Serial.print("le paquet recu est : ");
-  Serial.println(paquet);
-  if(sx1276._payloadlength > 0){
+  //Serial.print(("Receive packet timeout, state "));
+  //Serial.println(e, DEC);
+  
+  if(e == 0 && sx1276._payloadlength > 0){
+    Serial.print("un paquet recu");
+    //Serial.println(paquet);
    return true;
+  }else{
+    Serial.println("pas de nouveau paquet");
   }
   return false;
 }
 
 void sendPaquet(String paquet, int idClient){
-  char buff[paquet.length()];
-  paquet.toCharArray(buff, paquet.length()); 
+  if(paquet.length() > 0){
+    char buff[paquet.length()+1];
+  paquet.toCharArray(buff, paquet.length()+1); 
   e = sx1276.sendPacketTimeout(idClient, buff);
   Serial.print("Packet sent, state ");
   Serial.println(e, DEC);
   Serial.println(buff);
+  }else Serial.println("echec envoi");
+  
   
 }
 
