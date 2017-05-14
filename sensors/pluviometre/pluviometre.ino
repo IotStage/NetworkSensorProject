@@ -36,7 +36,8 @@ void getBasculement() {
   //Serial.print(value);
   //Serial.print(",");
   if (value == 0 && avant == 1) {
-    nbBasculement++;}
+    nbBasculement++;
+   }
   avant = value;
   //return nbBasculement;
 }
