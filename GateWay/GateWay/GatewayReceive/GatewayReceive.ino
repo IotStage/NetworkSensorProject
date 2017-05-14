@@ -2,8 +2,9 @@
 #include <Console.h>
 #include <SPI.h>
 
-#define ADDRESSE_GATEWAY 9
-#define ADDRESSE_RELAI 7
+#define ADDRESSE_GATEWAY 4
+#define ADDRESSE_RELAI 9
+int HEART_LED=A2;
 
 int e;
 String paquet="";
@@ -11,47 +12,48 @@ String paquet="";
 void setup()
 {
   // Open Console communications and wait for port to open:
-  //Serial.begin(115200);
+  //Console.begin(115200);
+  pinMode(HEART_LED, OUTPUT);
   Bridge.begin(115200);
   Console.begin();
-  while (!Console) ; // Wait for console port to be available
+  while (!Console){
+    digitalWrite(HEART_LED, HIGH);   // turn the HEART_LED on (HIGH is the voltage level)
+    delay(1000);              // wait for a second
+    digitalWrite(HEART_LED, LOW); 
+    delay(1000);; // Wait for console port to be available
+  }
   Console.println("Start Sketch");
-  // Print a start message
-  Console.println("SX1276 module and Arduino: receive packets without ACK");
+  Console.println("Debut initialisation RF");
   
-  // Power ON the module
   sx1276.ON();
-  
-  // Set transmission mode and print the result
-  e = sx1276.setMode(1);
+  e = sx1276.setMode(4);
+  Console.print("configuration du mode de transmission ");
   Console.println(e, DEC);
   
-  // Select frequency channel
-  e = sx1276.setChannel(CH_16_868);
-  Console.println("Setting Channel: state ");
+  e = sx1276.setChannel(CH_11_868);
+ Console.print("configuration du canal de transmission ");
   Console.println(e, DEC);
   
-  // Select output power (Max, High or Low)
   e = sx1276.setPower('M');
-  Console.println("Setting Power: state ");
+  Console.print("configuration de la puissance ");
   Console.println(e);
   
-  // Set the node address and print the result
+  
   e = sx1276.setNodeAddress(ADDRESSE_GATEWAY);
+  Console.print("configuration de l'adresse du relai ");
   Console.println(e, DEC);
   
-  // Print a success message
-  Console.print("SX1276 successfully configured ");
+  Console.print("Configuration terminee");
 }
 
 void loop(void)
 {
   
   // Receive message
-  //String paquet = "paquet";
-  //sendPaquet(paquet, 3);
+  //sendPaquet("paquet", ADDRESSE_RELAI);
+  //delay(1000);
   checkPacket();
-  delay(10000);
+  delay(1000);
 }
 
 void sendPaquet(String paquet, int idClient){
@@ -75,7 +77,9 @@ void checkPacket(){
    // String value = paquet.substring(5, paquet.length());
     //Console.println(value);  
      Console.print("le paquet recu est : ");
-  Console.println(paquet);
+    Console.println(paquet);
+       // turn the HEART_LED off by making the voltage LOW
+    //delay(1000);
     saveData(paquet);
   }
 }
