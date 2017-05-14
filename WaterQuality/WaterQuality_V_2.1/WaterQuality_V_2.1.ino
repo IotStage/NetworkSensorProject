@@ -17,7 +17,8 @@
  #include <WSNAnemometreSensor.h>
  #include <WSNTurbiditySensor.h>
  #include <SX1276.h>
-  #include <SPI.h>
+ #include <SPI.h>
+ #include <DHT.h>
 
 
 
@@ -31,6 +32,8 @@
 #define SensorPinTemperature 5
 #define SensorPinAnemometre 3
 #define SensorPinPluviometre 7
+#define SensorPinDHT 20
+#define SensorPinGirouette A9
 
 
 #define ADDRESSE_NODE 3
@@ -46,16 +49,20 @@ EC ec(SensorPinEC, SensorPinTemperature);
 ORP orp(SensorPinORP);
 Anemometre anemometre(SensorPinAnemometre);
 Turbidity turbidity(SensorPinTurbidity);
-int DELAI = 1000;
+DHT dht;
+long DELAI = 1000;
 int nbBasculement = 0;
 int avant = 1;
 int value = 0;
 int e=0;
 String paquet="";
-int DELAY = 2000; //2 secondes
+//int DELAY = 10000; //2 secondes
 long temps=0;
 long ATTENTE = 2000;
-
+float humidity = 0.0;
+float temperature = 0.0;
+long tempsDHT=0;
+int i=0;
 
 /*************
  * fonctions *
@@ -73,19 +80,27 @@ long ATTENTE = 2000;
  * definition des fonctions *
  ****************************/
 void setup(){
-  Serial.begin(115200);
+  Serial.begin(9600);
   initRF();
   anemometre.init();
   ec.init();
+  dht.setup(SensorPinDHT);
   pinMode(SensorPinPluviometre, INPUT);
+  tempsDHT=millis();
+  temps=millis();
   
 }
 
 void loop(){
   updateSensor();
-  
-  sendPaquet(getTrame(), ADDRESSE_RELAI);
-  Serial.println("paquet sent");
+  //if(millis() - temps > DELAI){
+    sendPaquet(getTrame(), ADDRESSE_RELAI);
+    Serial.print("paquet ");
+    Serial.print(i);
+    Serial.println(" sent");
+    i++;
+    temps = millis();
+  //}
   delay(DELAI);
   
 }
@@ -154,6 +169,15 @@ void updateSensor(){
   anemometre.updateAnemometre();
   turbidity.updateTurbidity();
   getBasculement();
+  updateDHT();
+}
+
+void updateDHT(){
+  if(millis() - tempsDHT > dht.getMinimumSamplingPeriod() ){
+    humidity = dht.getHumidity();
+    temperature = dht.getTemperature();
+    tempsDHT = millis();
+  }
 }
 
 String getTrame(){
@@ -164,26 +188,70 @@ String getTrame(){
   trame+=";";
   trame+=String((float)ec.getMesure(),1);
   trame+=";";
+  trame+=String(turbidity.getMesure(),1);
+  trame+=";";
   trame+=String((float)ec.getTemperature(), 1);
   trame+=";";
   trame+=String((float)anemometre.getMesure(),1);
   trame+=";";
-  trame+=String(turbidity.getMesure(),1);
+  trame+=String(getDirectionVent(),1);
+  trame+=";";
+  trame+=String(humidity,1);
+  trame+=";";
+  trame+=String(temperature,1);
   trame+=";";
   trame+=String((float)nbBasculement, 1);
-  Serial.println(nbBasculement);
+  //Serial.println(nbBasculement);
   nbBasculement=0;
-  Serial.print("taille paquet =");
-  Serial.println(trame.length());
+  //Serial.print("taille paquet =");
+  Serial.println(trame);
   Serial.flush();
   return trame;
   
 }
 
 void getBasculement(){
-  //value = digitalRead(SensorPinPluviometre);
-  //if (value == 0 && avant == 1) 
+  value = digitalRead(SensorPinPluviometre);
+  if (value == 0 && avant == 1) 
     nbBasculement++;
   avant = value;
 }
+
+
+float getDirectionVent(){
+  float valeur = analogRead(SensorPinGirouette)*(5.0/1023.0);
+  if(valeur<=0.32)
+    return 112.5;
+  else if(valeur <= 0.41)
+    return 67.5;
+  else if(valeur <= 0.45)
+    return 90.0;
+  else if(valeur <= 0.62)
+    return 157.5; 
+  else if(valeur <= 0.90)
+    return 135.0;
+  else if(valeur <= 1.19)
+    return 202.5;
+  else if(valeur <= 1.40)
+    return 180.0;
+  else if(valeur <= 1.98)
+    return 22.5;
+  else if(valeur <= 2.25)
+    return 45.0;
+  else if(valeur <= 2.93)
+    return 147.5;
+  else if(valeur <= 3.08)
+    return 225.0;
+  else if(valeur <= 3.43)
+    return 137.5;
+  else if(valeur <= 3.84)
+    return 0.0;
+  else if(valeur <= 4.04)
+    return 292.5;
+  else if(valeur <= 4.62)
+    return 270.0;
+  else if(valeur <= 4.78)
+    return 315.0;
+}
+
 
