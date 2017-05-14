@@ -10,11 +10,11 @@ void initLora(){
   sx1276.ON();
   
   // Set transmission mode and print the result
-  e = sx1276.setMode(1);
+  e = sx1276.setMode(4);
   Console.println(e, DEC);
   
   // Select frequency channel
-  e = sx1276.setChannel(CH_16_868);
+  e = sx1276.setChannel(CH_10_868);
   Console.println("Setting Channel: state ");
   Console.println(e, DEC);
   
@@ -24,7 +24,7 @@ void initLora(){
   Console.println(e);
   
   // Set the node address and print the result
-  e = sx1276.setNodeAddress(8);
+  e = sx1276.setNodeAddress(1);
   Console.println(e, DEC);
   
   // Print a success message
