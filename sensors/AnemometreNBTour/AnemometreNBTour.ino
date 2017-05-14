@@ -17,7 +17,7 @@ void loop() {
   //Serial.print("la vitesse du vent est : ");
   //
   
-Serial.println(2*3.14*7.2*0.01*nbTour, 4);
+Serial.println(2*3.14*7.2*0.01*nbTour/4, 4);
   //Serial.println(" m/s");
   
   
