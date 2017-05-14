@@ -1,4 +1,4 @@
-volatile uint8_t change=0;
+uint8_t change=0;
 int nbTour=0;
 void setup() {
 Serial.begin(9600);
@@ -11,16 +11,19 @@ void loop() {
   int val = digitalRead(3);
    //float val2 = analogRead(A0)*(5.0/1023.0);
 Serial.print(nbTour);
-nbTour=0;
-Serial.print(", ");
+Serial.print(",");
+//Serial.print(change);
+//Serial.print(",");
 Serial.println(val);
-delay(50);
+nbTour=0;
+delay(5);
 
 }
 
 void getTour(){
+  //Serial.println(digitalRead(3));
   change++;
-  if(change%4 == 0){
+  if(change%8 == 0){
     nbTour++;
     change=0;
   }
