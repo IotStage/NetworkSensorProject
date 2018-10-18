@@ -1,12 +1,3 @@
-/*
- # Gateway receiver without relay 
- # Vers   : 3.0
- # Product: Dragino Gateway LG01
- # Author : Bassirou NGOM
- # email : bassiroungom26@gmail.com
- # Require: Bridge, ecrypt and SX1276 librairie 
- */
-
 #define BAUDRATE 115200
 
 //If you use Dragino Yun Mesh Firmware , uncomment below lines. 
@@ -15,21 +6,21 @@
 
 #include <Bridge.h>
 #include <SPI.h>
-#include <SX1276.h>
+#include <RH_RF95.h>
 #include <HttpClient.h>
 #include <Console.h>
 #include <String.h>
 #include "encrypt.h"
 
 HttpClient client;
-#define ADDRESSE_GATEWAY 8
-#define ADDRESSE_NODE 3
+#define ADDRESSE_GATEWAY 4
+#define ADDRESSE_RELAI 9
 #define INFO 0
 #define CTL 1
 #define SUP 0
 #define CMD 1
 
-String ADDRESSE_SERVER ="196.1.95.67";
+String ADDRESSE_SERVER ="10.130.1.200";
 String PORT_SERVER ="8888";
 
 //int HEART_LED=A2;
@@ -55,7 +46,14 @@ void setup()
   
   while (!Console) ; // Wait for //Console port to be available
   Console.println("Start Sketch");
-  initRF();
+  if (!rf95.init())
+    //Console.println("init failed");
+  // Setup ISM frequency
+  rf95.setFrequency(frequency);
+  // Setup Power,dBm
+  rf95.setTxPower(13);
+  clignoterLED();
+  Console.print("Configuration terminee");
 }
 
 void loop(void)
@@ -88,42 +86,63 @@ void saveData(String sensor, int type){
 }
 
 void listenMsgEntrant(void){
-
-   if(sx1276.availableData(100))
+  if (rf95.waitAvailableTimeout(100))
   {
     clignoterLED();
-    sx1276.receivePacketTimeout(10000);
-    Console.println("Reception d'un message");
-    char buf[sx1276._payloadlength];//buffer to store the server response message
-    uint8_t len = sx1276._payloadlength;// data length
-    for(unsigned int i=0; i<sx1276._payloadlength; i++)
-      buf[i]=(char)sx1276.packet_received.data[i];
-    
-    Console.println("decryptage du message "); 
-    Console.println(buf);         
-    encrypt_decrypt.btea(buf, -len, encryptkey);
-    if(buf[0] == 'I' && buf[1] == 'N' && buf[2] == 'F' && buf[3] == ':' )
-    {
+    //Serial.println("Reception d'un message");
+    char buf[RH_RF95_MAX_MESSAGE_LEN];//buffer to store the server response message
+    uint8_t len = sizeof(buf);// data length
+    if (rf95.recv(buf, &len))//check if receive data is correct 
+    {    
+      Console.println("un nouveau paquet");
+      Console.println(buf);
       clignoterLED();
-      char buff2[len-4];
-      for(int i = 0; i<len-4; i++)
-        buff2[i]=buf[i+4];
-      String valeur = String(buff2);
-      clignoterLED();
-      saveData(valeur, INFO);
-      clignoterLED();
+      Console.println("decryptage du message ");          
+      encrypt_decrypt.btea(buf, -len, encryptkey);
+      Console.print(buf[0]);
+      Console.print(buf[1]);
+      Console.print(buf[2]);
+      Console.println(buf[3]);
+      if(buf[0] == 'I' && buf[1] == 'N' && buf[2] == 'F' && buf[3] == ':' )
+      {
+        clignoterLED();
+        char buff2[len-4];
+        for(int i = 0; i<len-4; i++)
+          buff2[i]=buf[i+4];
+        String valeur = String(buff2);
+        clignoterLED();
+        saveData(valeur, INFO);
+        clignoterLED();
+      }else if(buf[0] == 'C' && buf[1] == 'T' && buf[2] == 'L' && buf[3] == ':' )
+      {
+        clignoterLED();
+        char buff2[len-4];
+        for(int i = 0; i<len-4; i++)
+          buff2[i]=buf[i+4];
+        String valeur = String(buff2);
+        saveData(valeur, CMD);
+        clignoterLED();
+      }
     }
   }
 }
 
 void listenMsgSortant(){
   clignoterLED();
-  String msg = getMsg(CMD);
-  clignoterLED();
+  String msg = getMsg(SUP);
   if(msg != ""){
     clignoterLED();
-    sendPaquet(msg, CMD);
+    sendPaquet(msg, SUP);
     clignoterLED();
+  }else{
+    clignoterLED();
+    msg = getMsg(CMD);
+    clignoterLED();
+    if(msg != ""){
+      clignoterLED();
+      sendPaquet(msg, CMD);
+      clignoterLED();
+    }
   }
 }
 
@@ -131,9 +150,9 @@ String getMsg(int type){
   String msg = "";
    String url="";
   if(type == SUP)
-    url="http://"+ADDRESSE_SERVER+"/plateforme/supervisionMsg";
+    url="http://"+ADDRESSE_SERVER+":"+PORT_SERVER+"/slim/supervisionMsg";
   else
-    url="http://"+ADDRESSE_SERVER+"/plateforme/cmdMsg";
+    url="http://"+ADDRESSE_SERVER+":"+PORT_SERVER+"/slim/cmdMsg";
  client.get(url);
  Console.println(url);
  clignoterLED();
@@ -150,6 +169,7 @@ clignoterLED();
 }
 
 void sendPaquet(String paquet, int type){
+ 
   int len = paquet.length()+1;
   Console.print("la taille du paquet est :");
   Console.println(len);
@@ -172,9 +192,9 @@ void sendPaquet(String paquet, int type){
   }
   Console.print("la cmd est ");
   Console.println(buff2);
-  encrypt_decrypt.btea(buff2, len, encryptkey);
-  sx1276.sendPacketTimeout(ADDRESSE_NODE, buff2);
-  //rf95.send(buff2, sizeof(buff2));
+  encrypt_decrypt.btea(buff2, sizeof(buff2), encryptkey);
+  rf95.send(buff2, sizeof(buff2));
+  
 }
 
 
@@ -188,18 +208,3 @@ void clignoterLED(){
 
 
 
-void initRF(){
-  Serial.println(F("Debut initialisation RF"));
-    // Power ON the module
-  sx1276.ON();
-  // Set transmission mode and print the result
-  sx1276.setMode(1);
-  sx1276.setChannel(CH_16_868);
-  sx1276.setMaxCurrent(0x1B);
-  sx1276.getMaxCurrent();
-  sx1276.setNodeAddress(ADDRESSE_GATEWAY);
-  // Select output power (Max, High or Low)
-  /* H=13dBm M=17dBm  measured at the antenna connector*/
-  sx1276.setPower('H');
-  Serial.print("Configuration terminee");
-}

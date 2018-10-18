@@ -32,7 +32,7 @@
 #define SensorPinGirouette A2
 
 
-#define ADDRESSE_NODE 5
+#define ADDRESSE_NODE 3
 #define ADDRESSE_RELAI 8
 #define DEBUG 0
 
@@ -281,10 +281,11 @@ void initRF(){
     // Power ON the module
   sx1276.ON();
   // Set transmission mode and print the result
-  sx1276.setMode(4);
+  sx1276.setMode(1);
   sx1276.setChannel(CH_16_868);
   sx1276.setMaxCurrent(0x1B);
   sx1276.getMaxCurrent();
+  sx1276.setNodeAddress(ADDRESSE_NODE);
   // Select output power (Max, High or Low)
   /* H=13dBm M=17dBm  measured at the antenna connector*/
   sx1276.setPower('H');
