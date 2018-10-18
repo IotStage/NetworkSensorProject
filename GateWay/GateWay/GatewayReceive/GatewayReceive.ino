@@ -1,8 +1,12 @@
 #include "SX1276.h"
 #include <Console.h>
 #include <SPI.h>
+#include <HttpClient.h>
 
-#define ADDRESSE_GATEWAY 4
+
+HttpClient client;
+
+#define ADDRESSE_GATEWAY 8
 #define ADDRESSE_RELAI 9
 int HEART_LED=A2;
 
@@ -26,11 +30,11 @@ void setup()
   Console.println("Debut initialisation RF");
   
   sx1276.ON();
-  e = sx1276.setMode(4);
+  e = sx1276.setMode(1);
   Console.print("configuration du mode de transmission ");
   Console.println(e, DEC);
   
-  e = sx1276.setChannel(CH_11_868);
+  e = sx1276.setChannel(CH_16_868);
  Console.print("configuration du canal de transmission ");
   Console.println(e, DEC);
   
@@ -53,7 +57,7 @@ void loop(void)
   //sendPaquet("paquet", ADDRESSE_RELAI);
   //delay(1000);
   checkPacket();
-  delay(1000);
+  //delay(10000);
 }
 
 void sendPaquet(String paquet, int idClient){
@@ -69,36 +73,32 @@ void sendPaquet(String paquet, int idClient){
 void checkPacket(){
   e = sx1276.receivePacketTimeout(10000);
   e = sx1276.getRSSIpacket();
-  paquet = sx1276.getPacketRecu();
-  Console.print(("Receive packet timeout, state "));
-  Console.println(e, DEC);
- Console.println(sx1276._payloadlength);
+  //paquet = sx1276.getPacketRecu();
+  for(unsigned int i=0; i<sx1276._payloadlength; i++)
+    paquet+=(char)sx1276.packet_received.data[i];
+  Console.println(sx1276._payloadlength);
   if(sx1276._payloadlength > 0){
-   // String value = paquet.substring(5, paquet.length());
-    //Console.println(value);  
-     Console.print("le paquet recu est : ");
+    Console.print("le paquet recu est : ");
     Console.println(paquet);
-       // turn the HEART_LED off by making the voltage LOW
-    //delay(1000);
-    saveData(paquet);
+    saveData(paquet);paquet="";
+    
+    
   }
 }
 
 void saveData(String sensor){
-  Process logdata;
-  logdata.begin("python");
-  logdata.addParameter("/root/datalogger.py");  //
-  //logdata.addParameter("vitesse");
-  logdata.addParameter(sensor);//
-  //Console.println(sensor);
-  logdata.run();
- 
-  // read the output of the command
- /* while (logdata.available() > 0) {
-    char c = logdata.read();
+  
+  String url="http://196.1.95.67/test/test.php?donnees=";
+  url+=sensor;
+  Console.println(url);
+ client.get(url);
+
+  /*while (client.available()) {
+    char c = client.read();
     Console.print(c);
   }*/
- // logdata.stop();
+  
   Console.println("send data done.");
+  Console.flush();
 }
 

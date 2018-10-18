@@ -25,34 +25,14 @@ float frequency = 868.0;
 
 void setup()
 {
-  // Open //Console communications and wait for port to open:
-  ////Console.begin(115200);
   pinMode(led, OUTPUT);     
   Bridge.begin(BAUDRATE);
-  //Console.begin();
-  /*while (!//Console){
-    digitalWrite(led, HIGH);   // turn the HEART_LED on (HIGH is the voltage level)
-    delay(1000);              // wait for a se//Cond
-    digitalWrite(led, LOW); 
-    delay(1000);; // Wait for //Console port to be available
-    //Console.begin();
-  }*/
-  //Console.println("Start Sketch");
-  //Console.println("Debut initialisation RF");
-  
- 
   while (!Console) ; // Wait for //Console port to be available
   Console.println("Start Sketch");
   if (!rf95.init())
-    //Console.println("init failed");
-  // Setup ISM frequency
   rf95.setFrequency(frequency);
   // Setup Power,dBm
   rf95.setTxPower(13);
-  // Defaults BW Bw = 125 kHz, Cr = 4/5, Sf = 128chips/symbol, CRC on
-  //Console.print("Listening on frequency: ");
-  //Console.println(frequency);
-  //Console.println(e, DEC);
   clignoterLED();
   Console.print("Configuration terminee");
 }
@@ -62,14 +42,12 @@ void loop(void)
 
    if (rf95.available())
   {
-    clignoterLED();
-    // Should be a message for us now   
+    clignoterLED();   
     uint8_t buf[RH_RF95_MAX_MESSAGE_LEN];
     uint8_t len = sizeof(buf);
     if (rf95.recv(buf, &len))
     {
       clignoterLED();
-      //digitalWrite(led, HIGH);
       RH_RF95::printBuffer("request: ", buf, len);
       Console.print("got request: ");
       Console.println((char*)buf);
@@ -83,15 +61,9 @@ void loop(void)
       Console.print("data is ");
       Console.println(recu);
       clignoterLED();
-      saveData(recu);
+      //saveData(recu);
       clignoterLED();
       // Send a reply
-      /*uint8_t data[] = "And hello back to you";
-      rf95.send(data, sizeof(data));
-      rf95.waitPacketSent();
-      //Console.println("Sent a reply");
-      digitalWrite(led, LOW);*/
-      //digitalWrite(led, LOW);
     }
     else
     {
@@ -99,21 +71,14 @@ void loop(void)
     }
   }
   
-  // Receive message
-  //sendPaquet("paquet", ADDRESSE_RELAI);
-  //delay(1000);
-  //checkPacket();
-  //delay(1000);
 }
 
 void saveData(String sensor){
   
-  String url="http://10.130.1.200:8888/wsn/web/app_dev.php/pushDatas/";
+  String url="http://10.130.1.200:8888/slim/pushDatas/";
   url+=sensor;
  client.get(url);
 
-  // if there are incoming bytes available
-  // from the server, read them and print them:
   while (client.available()) {
     char c = client.read();
     Console.print(c);

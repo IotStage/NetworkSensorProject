@@ -6,7 +6,7 @@
  # SKU    : SEN0165
 */
 #define VOLTAGE 5.00    //system voltage
-#define OFFSET 16        //zero drift voltage
+#define OFFSET 8        //zero drift voltage
 #define LED 13         //operating instructions
 
 double orpValue;
@@ -81,8 +81,8 @@ void loop(void) {
   {
   printTime=millis()+800;
   //Serial.print("ORP: ");
-  Serial.println((int)orpValue);
-  //      Serial.println("mV");
+  Serial.print((int)orpValue);
+        Serial.println("mV");
         digitalWrite(LED,1-digitalRead(LED));
   }
 }

@@ -33,11 +33,11 @@ void loop(void)
 {
    if(millis() - temps > intervalle ){
       Serial.println("requet to slave");
-      Wire.requestFrom(ADDWIRESLAVE, 64);
+      //Wire.requestFrom(ADDWIRESLAVE, 64);
       String data = getDataFromWrite();
       //data+=getDataFromWrite();
       if(data != "" ){
-        //sendDonnees(data);
+        sendDonnees(data);
         Serial.println(data);
       }
    }
@@ -73,8 +73,8 @@ void sendDonnees(String paquet){
   char buff[paquet.length()+1];
   paquet.toCharArray(buff, paquet.length()+1); 
   sx1276.sendPacketTimeout(ADDSERVER, buff);
-  //Serial.print("Packet sent, state ");
-  //Serial.println(e, DEC);
+  Serial.print("Packet sent, state ");
+  Serial.println(e, DEC);
   Serial.println(strlen(buff));
   delay(5000);
 }

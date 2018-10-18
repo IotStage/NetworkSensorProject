@@ -7,7 +7,7 @@
  
  
 /* Broche du bus 1-Wire */
-const byte BROCHE_ONEWIRE = 7;
+const byte BROCHE_ONEWIRE = 3;
 
 /* Code de retour de la fonction getTemperature() */
 enum DS18B20_RCODES {

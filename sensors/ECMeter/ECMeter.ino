@@ -1,11 +1,12 @@
-//*
-/*
- * # Example code d'utilisation ORP meter V1.0.
- # Editeur : bngesp
- # Date   : 2017.03.16
- # Product: EC Meter
- # SKU    : SEN0300
-*/
+// # 
+// # Editor     : YouYou from DFRobot
+// # Date       : 23.04.2014
+// # E-Mail  : youyou.yu@dfrobot.com
+
+// # Product name: Analog EC Meter
+// # Product SKU : DFR0300
+// # Version     : 1.0
+
 // # Description:
 // # Sample code for testing the EC meter and get the data feedback from the Arduino Serial Monitor.
 
@@ -22,7 +23,7 @@
 const byte numReadings = 20;     //the number of sample times
 byte ECsensorPin = A1;  //EC Meter analog output,pin on analog 1
 byte DS18B20_Pin = 2; //DS18B20 signal, pin on digital 2
-unsigned int __analogSampleInterval  =25,printInterval=700,_tempSampleInterval=850;  //analog sample interval;serial print interval;temperature sample interval
+unsigned int AnalogSampleInterval=25,printInterval=700,tempSampleInterval=850;  //analog sample interval;serial print interval;temperature sample interval
 unsigned int readings[numReadings];      // the readings from the analog input
 byte index = 0;                  // the index of the current reading
 unsigned long AnalogValueTotal = 0;                  // the running total
@@ -31,7 +32,7 @@ unsigned long AnalogSampleTime,printTime,tempSampleTime;
 float temperature,ECcurrent; 
  
 //Temperature chip i/o
-OneWire dsEC(DS18B20_Pin);  // on digital pin 2
+OneWire ds(DS18B20_Pin);  // on digital pin 2
 
 void setup() {
  // initialize serial communication with computer:
@@ -49,7 +50,7 @@ void loop() {
   /*
    Every once in a while,sample the analog value and calculate the average.
   */
-  if(millis()-AnalogSampleTime>=_analogSampleInterval )  
+  if(millis()-AnalogSampleTime>=AnalogSampleInterval)  
   {
     AnalogSampleTime=millis();
      // subtract the last reading:
@@ -71,7 +72,7 @@ void loop() {
    Every once in a while,MCU read the temperature from the DS18B20 and then let the DS18B20 start the convert.
    Attention:The interval between start the convert and read the temperature should be greater than 750 millisecond,or the temperature is not accurate!
   */
-   if(millis()-tempSampleTime>=_tempSampleInterval) 
+   if(millis()-tempSampleTime>=tempSampleInterval) 
   {
     tempSampleTime=millis();
     temperature = TempProcess(ReadTemperature);  // read the current temperature from the  DS18B20
@@ -119,9 +120,9 @@ float TempProcess(bool ch)
   static byte addr[8];
   static float TemperatureSum;
   if(!ch){
-          if ( !dsEC.search(addr)) {
+          if ( !ds.search(addr)) {
               Serial.println("no more sensors on chain, reset search!");
-              dsEC.reset_search();
+              ds.reset_search();
               return 0;
           }      
           if ( OneWire::crc8( addr, 7) != addr[7]) {
@@ -132,18 +133,18 @@ float TempProcess(bool ch)
               Serial.print("Device is not recognized!");
               return 0;
           }      
-          dsEC.reset();
-          dsEC.select(addr);
-          dsEC.write(0x44,1); // start conversion, with parasite power on at the end
+          ds.reset();
+          ds.select(addr);
+          ds.write(0x44,1); // start conversion, with parasite power on at the end
   }
   else{  
-          byte present = dsEC.reset();
-          dsEC.select(addr);    
-          dsEC.write(0xBE); // Read Scratchpad            
+          byte present = ds.reset();
+          ds.select(addr);    
+          ds.write(0xBE); // Read Scratchpad            
           for (int i = 0; i < 9; i++) { // we need 9 bytes
-            data[i] = dsEC.read();
+            data[i] = ds.read();
           }         
-          dsEC.reset_search();           
+          ds.reset_search();           
           byte MSB = data[1];
           byte LSB = data[0];        
           float tempRead = ((MSB << 8) | LSB); //using two's compliment

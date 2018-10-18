@@ -43,8 +43,10 @@ void loop()
    if(millis()-analogSampleTimepoint > 30U) //every 30ms,read the analog value from the ADC
    {
      analogSampleTimepoint = millis();
-     analogBuffer[analogBufferIndex] = analogRead(ecSensorPin);    //read the analog value and store into the buffer,every 40ms
+     float val = analogRead(ecSensorPin);
+     analogBuffer[analogBufferIndex] = val;    //read the analog value and store into the buffer,every 40ms
      analogBufferIndex++;
+     //Serial.println(val);
      if(analogBufferIndex == SCOUNT) 
          analogBufferIndex = 0;
    }
@@ -72,14 +74,19 @@ void loop()
           Serial.print(F("^C             EC:"));
       }
      float TempCoefficient=1.0+0.0185*(temperature-25.0);    //temperature compensation formula: fFinalResult(25^C) = fFinalResult(current)/(1.0+0.0185*(fTP-25.0));
-     float CoefficientVolatge=(float)averageVoltage/TempCoefficient;   
+     float CoefficientVolatge=(float)averageVoltage/TempCoefficient;  
+     //Serial.print("coef = ");
+     //Serial.print(CoefficientVolatge); 
      if(CoefficientVolatge<150)Serial.println(F("No solution!"));   //25^C 1413us/cm<-->about 216mv  if the voltage(compensate)<150,that is <1ms/cm,out of the range
      else if(CoefficientVolatge>3300)Serial.println(F("Out of the range!"));  //>20ms/cm,out of the range
      else{ 
       if(CoefficientVolatge<=448)ECvalue=6.84*CoefficientVolatge-64.32;   //1ms/cm<EC<=3ms/cm
       else if(CoefficientVolatge<=1457)ECvalue=6.98*CoefficientVolatge-127;  //3ms/cm<EC<=10ms/cm
       else ECvalue=5.3*CoefficientVolatge+2278;                           //10ms/cm<EC<20ms/cm
+      Serial.print(ECvalue,2);
+       Serial.print(F("fin"));
       ECvalueRaw = ECvalue/1000.0;
+      compensationFactor=0.87;
       ECvalue = ECvalue/compensationFactor/1000.0;    //after compensation,convert us/cm to ms/cm
       Serial.print(ECvalue,2);     //two decimal
       Serial.print(F("ms/cm"));
